@@ -1,0 +1,44 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      service_name: "your_service_name"
+      product: "your_product"
+      API_URL: "your_api_url/update_frequency"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Update Deployment Frequency
+        run: |
+          echo "Updating Deployment Frequency..."
+
+          # Use curl to send a POST request with JSON data
+          curl -X POST "$API_URL" \
+          -H "Content-Type: application/json" \
+          -d '{
+                "service_name": "'"$service_name"'",
+                "product": "'"$product"'"
+              }' \
+          -w "\nHTTP Status: %{http_code}\n" \
+          -o response.txt \
+          -s
+
+          # Check the response status
+          HTTP_STATUS=$(tail -n 1 response.txt | awk '{print $NF}')
+          if [[ "$HTTP_STATUS" -eq 200 ]]; then
+            echo "Successfully updated frequency for deployment: $service_name"
+          else
+            echo "Failed to update frequency. HTTP Status: $HTTP_STATUS"
+            cat response.txt
+            exit 1
+          fi

@@ -1,0 +1,82 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: deploy-freq
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-frequencies
+  namespace: deploy-freq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: deployment-frequencies
+  template:
+    metadata:
+      labels:
+        app: deployment-frequencies
+    spec:
+      containers:
+      - name: deployment-frequencies
+        image: saloyiana/deployment-frequencies:v1.0
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+          - name: db-secret-volume
+            mountPath: /etc/db-secrets
+            readOnly: true
+      volumes:
+        - name: db-secret-volume
+          secret:
+            secretName: db-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deployment-frequencies
+  namespace: deploy-freq
+  labels:
+    app: deployment-frequencies
+spec:
+  ports:
+  - port: 80
+    targetPort: 8000
+  selector:
+    app: deployment-frequencies
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: deployment-frequencies
+  namespace: deploy-freq
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  # Your deployment frequencies counter URL 
+  - host: deployment-frequencies.example.co
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: deployment-frequencies
+            port:
+              number: 80
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secrets
+  namespace: deploy-freq
+type: Opaque
+data:
+  # Better to have a secret manager to host your secrets instead if push them to Git!
+  username: ##Your_DB_Username##
+  password: ##YOUR_DB_Password##
+  host: ##Your_DB_Host##
+  port: ##Your_DB_PORT## 
+  database_name: ##Your_DB_Name##

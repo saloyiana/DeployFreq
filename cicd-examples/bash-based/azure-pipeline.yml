@@ -1,0 +1,35 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  service_name: "your_service_name"
+  product: "your_product"
+  API_URL: "your_api_url/update_frequency"
+
+steps:
+- script: |
+    echo "Updating Deployment Frequency ..."
+
+    curl -X POST "$API_URL" \
+    -H "Content-Type: application/json" \
+    -d '{
+          "service_name": "'"$service_name"'",
+          "product": "'"$product"'"
+        }' \
+    -w "\nHTTP Status: %{http_code}\n" \
+    -o response.txt \
+    -s
+
+    # Check the response status
+    HTTP_STATUS=$(cat response.txt | tail -n 1 | awk '{print $NF}')
+    if [[ "$HTTP_STATUS" -eq 200 ]]; then
+      echo "Successfully updated deployment frequency for: $service_name"
+    else
+      echo "Failed to update frequency. HTTP Status: $HTTP_STATUS"
+      cat response.txt
+      exit 1
+    fi
+  displayName: 'Update Deployment Frequency'

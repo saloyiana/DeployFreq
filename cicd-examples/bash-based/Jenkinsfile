@@ -1,0 +1,43 @@
+pipeline {
+    agent any
+
+    environment {
+        service_name = 'your_service_name'
+        product = 'your_product'
+        API_URL = 'your_api_url/update_frequency'
+    }
+
+    stages {
+        stage('Update Deployment Frequency') {
+            steps {
+                script {
+                    echo "Updating Deployment Frequency..."
+
+                    def response = sh(script: """
+                        curl -X POST "$API_URL" \
+                        -H "Content-Type: application/json" \
+                        -d '{
+                            "service_name": "${service_name}",
+                            "product": "${product}"
+                        }' \
+                        -w "\\nHTTP Status: %{http_code}\\n" \
+                        -o response.txt \
+                        -s
+                    """, returnStdout: true)
+
+                    // Output the response and status
+                    echo response
+
+                    // Check the response status
+                    def httpStatus = readFile('response.txt').trim().split('\n')[-1]
+                    if (httpStatus == '200') {
+                        echo "Successfully updated frequency for deployment: ${service_name}"
+                    } else {
+                        echo "Failed to update frequency. HTTP Status: ${httpStatus}"
+                        error("Error updating deployment frequency.")
+                    }
+                }
+            }
+        }
+    }
+}

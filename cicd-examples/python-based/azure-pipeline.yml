@@ -1,0 +1,59 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  service_name: "your_service_name"
+  product: "your_product"
+  API_URL: "your_api_url/update_frequency"
+
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.x'
+    addToPath: true
+
+- script: |
+    pip install requests
+  displayName: 'Install Python dependencies'
+
+- script: |
+    python3 - <<EOF
+import requests
+import os
+import sys
+
+# Environment variables to specify deployment details
+API_URL = os.getenv('API_URL', 'localhost')
+service_name = os.getenv('service_name', 'default_deployment')
+product = os.getenv('product', 'default_product')
+
+# Prepare the payload
+payload = {
+    "service_name": service_name,
+    "product": product
+}
+
+try:
+    # Send the POST request to update the deployment frequency
+    response = requests.post(API_URL, json=payload)
+    
+    # Check the response
+    if response.status_code == 200:
+        print(f"Successfully updated frequency for deployment: {service_name}")
+    else:
+        print(f"Failed to update frequency. Status code: {response.status_code}")
+        try:
+            print(f"Response: {response.json()}")
+        except ValueError:
+            print(f"Non-JSON response: {response.text}")
+        sys.exit(1)
+
+except requests.RequestException as e:
+    print(f"An error occurred: {e}")
+    sys.exit(1)
+
+EOF
+  displayName: 'Update Deployment Frequency'
