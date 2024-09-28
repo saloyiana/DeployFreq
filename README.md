@@ -10,7 +10,7 @@ These metrics help organizations measure and improve their DevOps performance, d
 
 # DeployFreq 
 
-The **DeployFreq** is an application designed to automate one of the key metrics of DORA which is the *deployment frequanecy*. It efficiently manages and monitors deployment frequencies across various products, providing insights into deployment activities.
+The **DeployFreq** is an application designed to automate one of the key metrics of DORA which is the *deployment frequency*. It efficiently manages and monitors deployment frequencies across various products, providing insights into deployment activities.
 
 ### Features
 - **Update Deployment Frequency**: Increment service deployment counts for a specific product.
