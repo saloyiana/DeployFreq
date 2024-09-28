@@ -55,7 +55,7 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-  # Your deployment frequencies counter URL 
+  # Your deployment frequencies app URL 
   - host: deployment-frequencies.example.co
     http:
       paths:
